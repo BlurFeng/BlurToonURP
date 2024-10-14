@@ -72,6 +72,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Custom ignore
+.vsconfig
+
+/.vscode
 /Assets/Plugins/MMD4Mecanim
 /Assets/Plugins/MMD4Mecanim.meta
 

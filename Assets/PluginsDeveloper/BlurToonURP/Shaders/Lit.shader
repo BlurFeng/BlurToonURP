@@ -1,58 +1,69 @@
-Shader "WinhooToonURP/Lit"
+Shader "BlurToonURP/Lit"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _BaseMap ("Base Texture",2D) = "white"{}
+        _BaseColor("Base Color",Color)=(1,1,1,1)
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
-        LOD 100
+        Tags
+        {
+            "RenderPipeline"="UniversalPipeline"//这是一个URP Shader！
+            "Queue"="Geometry"
+            "RenderType"="Opaque"
+        }
+        HLSLINCLUDE
+         //CG中核心代码库 #include "UnityCG.cginc"
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+       
+        //除了贴图外，要暴露在Inspector面板上的变量都需要缓存到CBUFFER中
+        CBUFFER_START(UnityPerMaterial)
+        float4 _BaseMap_ST;
+        half4 _BaseColor;
+        CBUFFER_END
+        ENDHLSL
 
         Pass
         {
-            CGPROGRAM
+            Tags{"LightMode"="UniversalForward"}//这个Pass最终会输出到颜色缓冲里
+
+            HLSLPROGRAM //CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
-            #pragma multi_compile_fog
 
-            #include "UnityCG.cginc"
-
-            struct appdata
+            struct Attributes//这就是a2v
             {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float2 uv : TEXCOORD;
+            };
+            struct Varings//这就是v2f
+            {
+                float4 positionCS : SV_POSITION;
+                float2 uv : TEXCOORD;
             };
 
-            struct v2f
-            {
-                float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
-                float4 vertex : SV_POSITION;
-            };
+            TEXTURE2D(_BaseMap);//在CG中会写成sampler2D _MainTex;
+            SAMPLER(sampler_BaseMap);
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
-
-            v2f vert (appdata v)
+            Varings vert(Attributes IN)
             {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
-                return o;
+                Varings OUT;
+                //在CG里面，我们这样转换空间坐标 o.vertex = UnityObjectToClipPos(v.vertex);
+                VertexPositionInputs positionInputs = GetVertexPositionInputs(IN.positionOS.xyz);
+                OUT.positionCS = positionInputs.positionCS;
+
+                OUT.uv=TRANSFORM_TEX(IN.uv,_BaseMap);
+                return OUT;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            float4 frag(Varings IN):SV_Target
             {
-                // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
-                // apply fog
-                UNITY_APPLY_FOG(i.fogCoord, col);
-                return col;
+                //在CG里，我们这样对贴图采样 fixed4 col = tex2D(_MainTex, i.uv);
+                half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);                
+                return baseMap * _BaseColor;
             }
-            ENDCG
+            ENDHLSL  //ENDCG          
         }
     }
 }
