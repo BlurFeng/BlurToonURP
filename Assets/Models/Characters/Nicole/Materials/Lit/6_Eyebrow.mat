@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 16BodySkin2
+  m_Name: 6_Eyebrow
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -22,7 +22,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 32664c990cfdc494783a45187cd4f9a7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8871b37ed8d4fc14d836815e02d4d542, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -46,7 +46,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 32664c990cfdc494783a45187cd4f9a7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8871b37ed8d4fc14d836815e02d4d542, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -70,7 +70,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ToonTex:
-        m_Texture: {fileID: 2800000, guid: bc349aba4c3325649a3a493487be82db, type: 3}
+        m_Texture: {fileID: 2800000, guid: c755c24d9ff926343a8ceaf1f5dde959, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -139,7 +139,7 @@ Material:
     - _Specular: {r: 0, g: 0, b: 0, a: 0}
     - _ToonTone: {r: 1, g: 0.5, b: 0.5, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &1377855654727435174
+--- !u!114 &1417085264804297278
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
