@@ -30,7 +30,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
@@ -40,7 +40,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
@@ -55,7 +55,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
@@ -65,7 +65,22 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 1f7cc8585278bc540b164d66409f5a73,
         type: 3}
       propertyPath: m_Name
-      value: Nicole
+      value: NicoleLit
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 1f7cc8585278bc540b164d66409f5a73,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 44c47409e7de9fa4fa23484fa530f2cd, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 1f7cc8585278bc540b164d66409f5a73,
+        type: 3}
+      propertyPath: m_CullingMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 1f7cc8585278bc540b164d66409f5a73,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1f7cc8585278bc540b164d66409f5a73, type: 3}

@@ -2,68 +2,91 @@ Shader "BlurToonURP/Lit"
 {
     Properties
     {
-        _BaseMap ("Base Texture",2D) = "white"{}
-        _BaseColor("Base Color",Color)=(1,1,1,1)
+        //基础纹理
+        _BaseMap("Base Map", 2D) = "white" {} //基础贴图
+        [HDR]_BaseColor("Base Color", Color) = (1, 1, 1, 1)
     }
+
     SubShader
     {
         Tags
         {
-            "RenderPipeline"="UniversalPipeline"//这是一个URP Shader！
-            "Queue"="Geometry"
-            "RenderType"="Opaque"
+            "RenderPipeline" = "UniversalPipeline"
+            "RenderType" = "Opaque"
         }
-        HLSLINCLUDE
-         //CG中核心代码库 #include "UnityCG.cginc"
-        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-       
-        //除了贴图外，要暴露在Inspector面板上的变量都需要缓存到CBUFFER中
-        CBUFFER_START(UnityPerMaterial)
-        float4 _BaseMap_ST;
-        half4 _BaseColor;
-        CBUFFER_END
-        ENDHLSL
 
         Pass
         {
-            Tags{"LightMode"="UniversalForward"}//这个Pass最终会输出到颜色缓冲里
+            HLSLPROGRAM
 
-            HLSLPROGRAM //CGPROGRAM
+            //顶点着色器
             #pragma vertex vert
+            //片元着色器
             #pragma fragment frag
 
-            struct Attributes//这就是a2v
+            //URP常用的核心方法库
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
+
+            //顶点着色去输入数据
+            struct Attributes
             {
-                float4 positionOS : POSITION;
-                float2 uv : TEXCOORD;
+                float4 positionOS : POSITION; //对象空间顶点位置
+                float2 texcoord   : TEXCOORD0; //纹理坐标
+
+                //GPUInstance功能相关宏，用于传递ID数据
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
-            struct Varings//这就是v2f
+
+            //片元着色器输入数据
+            struct Varyings
             {
-                float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD;
+                float4 positionCS : SV_POSITION; //裁剪空间位置
+                float2 uv : TEXCOORD0; //传递的纹理坐标
+
+                //GPUInstance功能相关宏，用于传递ID数据
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            TEXTURE2D(_BaseMap);//在CG中会写成sampler2D _MainTex;
-            SAMPLER(sampler_BaseMap);
+            CBUFFER_START(UnityPerMaterial)
+            //已在"Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"中定义的内容。
+            //TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap); //基础贴图
+            //TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap); //法线贴图
+            half4 _BaseColor;
+            CBUFFER_END
 
-            Varings vert(Attributes IN)
+            Varyings vert(Attributes IN)
             {
-                Varings OUT;
-                //在CG里面，我们这样转换空间坐标 o.vertex = UnityObjectToClipPos(v.vertex);
-                VertexPositionInputs positionInputs = GetVertexPositionInputs(IN.positionOS.xyz);
-                OUT.positionCS = positionInputs.positionCS;
+                Varyings OUT;
 
-                OUT.uv=TRANSFORM_TEX(IN.uv,_BaseMap);
+                //GPUInstance功能相关宏。
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
+
+                VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.positionOS.xyz);
+                //VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normalOS, IN.tangentOS);
+
+                //不使用TRANSFORM_TEX()进行缩放和偏移，NPR一般不需要在此处进行缩放，节省这一步的计算。
+                //但我们任然可以根据不同贴图各自的设定进行转换。
+                OUT.uv = IN.texcoord;
+                OUT.positionCS = vertexInput.positionCS;
+
                 return OUT;
             }
 
-            float4 frag(Varings IN):SV_Target
+            half4 frag(Varyings IN) : SV_Target
             {
-                //在CG里，我们这样对贴图采样 fixed4 col = tex2D(_MainTex, i.uv);
-                half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);                
-                return baseMap * _BaseColor;
+                //GPUInstance功能相关宏。
+                UNITY_SETUP_INSTANCE_ID(IN);
+
+                float2 uv = IN.uv;
+                //基础贴图采样。sampler_BaseMap是Unity自动生成的对应采样器不需要额外定义。
+                float4 colorBaseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv) * _BaseColor;
+
+                return colorBaseMap;
             }
-            ENDHLSL  //ENDCG          
+
+            ENDHLSL
         }
     }
 }
