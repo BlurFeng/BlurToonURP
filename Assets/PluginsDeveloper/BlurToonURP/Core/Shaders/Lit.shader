@@ -19,16 +19,19 @@ Shader "BlurToonURP/Lit"
         {
             HLSLPROGRAM
 
-            //顶点着色器
-            #pragma vertex vert
-            //片元着色器
-            #pragma fragment frag
+            // -------------------------------------
+            // BlurToonURP Keywords
+            #pragma shader_feature_local _BASEMAP_SHADER_THRESHOLDMAP_ON //暗部阈值贴图
+
+
+            #pragma vertex vert //顶点着色器
+            #pragma fragment frag //片元着色器
 
             //URP常用的核心方法库
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
 
-            //顶点着色去输入数据
+            //顶点着色器输入数据
             struct Attributes
             {
                 float4 positionOS : POSITION; //对象空间顶点位置
@@ -88,5 +91,8 @@ Shader "BlurToonURP/Lit"
 
             ENDHLSL
         }
+
     }
+
+    CustomEditor "BlurToonURP.EditorGUIx.ShaderGUILit"
 }
