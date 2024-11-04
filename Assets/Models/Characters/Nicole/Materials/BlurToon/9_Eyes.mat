@@ -9,14 +9,16 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: 9_Eyes
   m_Shader: {fileID: 4800000, guid: 23f4a6e7438a6b949b99b95ccbdaa3cc, type: 3}
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _OUTLINE_WIDTH_SAME
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - Outline
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -103,6 +105,12 @@ Material:
     - _EdgeScale: 0.001
     - _EdgeSize: 0.0005
     - _EnvironmentReflections: 1
+    - _FloatOuelintWidthType: 0
+    - _FloatOutlineBaseMapBlendIntensity: 1
+    - _FloatOutlineType: 0
+    - _FloatOutlineWidth: 1.5
+    - _FloatOutlineWidthType: 0
+    - _FloatOutlintWidthType: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.1
     - _GlossyReflections: 1
@@ -124,6 +132,7 @@ Material:
     - _TessEdgeLength: 5
     - _TessExtrusionAmount: 0
     - _TessPhongStrength: 0.5
+    - _ToggleOutlineBaseMapBlend: 0
     - _UVSec: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
@@ -131,6 +140,7 @@ Material:
     - _Ambient: {r: 0.5, g: 0.5, b: 0.5, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorOutlineColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
     - _EdgeColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Emissive: {r: 0, g: 0, b: 0, a: 0}

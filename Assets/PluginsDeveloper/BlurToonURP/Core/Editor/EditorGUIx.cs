@@ -13,7 +13,7 @@ namespace BlurToonURP.EditorGUIx
         /// <summary>
         /// GUI默认颜色
         /// </summary>
-        public static Color ColorDefault { get => GUI.color; }
+        public static Color ColorDefault { get => GUI.backgroundColor; }
 
         #region 切换按钮
         /// <summary>
@@ -108,6 +108,41 @@ namespace BlurToonURP.EditorGUIx
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+        #endregion
+        
+        #region 下拉弹窗
+        /// <summary>
+        /// 下拉弹窗
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="property"></param>
+        /// <param name="type"></param>
+        /// <param name="materialEditor"></param>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public static void DropdownEnum(GUIContent label, MaterialProperty property, System.Type type, MaterialEditor materialEditor)
+        {
+            if (property == null)
+            {
+                LabelTextColor("下拉弹窗错误！ >> 无效的材质球属性", Color.red);
+                return;
+            }
+
+            EditorGUI.showMixedValue = property.hasMixedValue;
+
+            //下拉弹窗
+            var enumNames = System.Enum.GetNames(type);
+            var mode = property.floatValue;
+            EditorGUI.BeginChangeCheck();
+            mode = EditorGUILayout.Popup(label, (int)mode, enumNames);
+            if (EditorGUI.EndChangeCheck())
+            {
+                //更新材质球数值
+                materialEditor.RegisterPropertyChangeUndo(label.text);
+                property.floatValue = mode;
+            }
+
+            EditorGUI.showMixedValue = false;
         }
         #endregion
 
@@ -224,6 +259,24 @@ namespace BlurToonURP.EditorGUIx
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.Space();
+        }
+        #endregion
+        
+        #region 彩色文本
+        /// <summary>
+        /// 标签 彩色
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <param name="style"></param>
+        public static void LabelTextColor(string text, Color color, GUIStyle style = null)
+        {
+            if (style == null)
+                style = EditorStyles.label;
+
+            GUI.color = color;
+            GUILayout.Label(text, EditorStyles.boldLabel);
+            GUI.color = ColorDefault;
         }
         #endregion
     }
