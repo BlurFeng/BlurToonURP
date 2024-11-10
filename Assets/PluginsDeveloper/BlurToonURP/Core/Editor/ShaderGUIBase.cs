@@ -9,16 +9,16 @@ namespace BlurToonURP.EditorGUIx
         /// <summary>
         /// 当前的材质球编辑器
         /// </summary>
-        protected MaterialEditor MaterialEditor {  get; private set; }
+        public MaterialEditor MaterialEditor {  get; private set; }
 
         /// <summary>
         /// 当前的材质球
         /// </summary>
         protected Material Material { get; private set; }
 
-        private bool isInitMaterialProperty = false;
-        private MaterialProperty[] materialPropertys;
-        private readonly Dictionary<string, MaterialProperty> materialPropertyDic = new Dictionary<string, MaterialProperty>();
+        private bool _isInitMaterialProperty;
+        private MaterialProperty[] _materialProperties;
+        private readonly Dictionary<string, MaterialProperty> _materialPropertyDic = new Dictionary<string, MaterialProperty>();
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -53,17 +53,17 @@ namespace BlurToonURP.EditorGUIx
         /// <param name="properties"></param>
         private void InitMatProperty(MaterialProperty[] properties)
         {
-            if (isInitMaterialProperty) return;
-            isInitMaterialProperty = true;
+            if (_isInitMaterialProperty) return;
+            _isInitMaterialProperty = true;
 
-            materialPropertys = properties;
-            if (materialPropertys == null) return;
+            _materialProperties = properties;
+            if (_materialProperties == null) return;
 
-            materialPropertyDic.Clear();
-            for (int i = 0; i < materialPropertys.Length; i++)
+            _materialPropertyDic.Clear();
+            for (int i = 0; i < _materialProperties.Length; i++)
             {
-                var item = materialPropertys[i];
-                materialPropertyDic.Add(item.name, item);
+                var item = _materialProperties[i];
+                _materialPropertyDic.Add(item.name, item);
             }
         }
 
@@ -74,13 +74,13 @@ namespace BlurToonURP.EditorGUIx
         /// <returns></returns>
         protected MaterialProperty GetMaterialProperty(string name)
         {
-            if (!materialPropertyDic.TryGetValue(name, out MaterialProperty matP))
+            if (!_materialPropertyDic.TryGetValue(name, out MaterialProperty matP))
             {
-                matP = FindProperty(name, materialPropertys);
+                matP = FindProperty(name, _materialProperties);
                 if (matP == null)
                     Debug.LogError($"BlurToonURP ShaderGUIBase.GetMaterialProperty() Error! can't find MaterialProperty by name : {name}");
                 else
-                    materialPropertyDic.Add(name, matP);
+                    _materialPropertyDic.Add(name, matP);
             }
 
             return matP;

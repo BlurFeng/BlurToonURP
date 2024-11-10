@@ -8,40 +8,60 @@ namespace BlurToonURP.EditorGUIx
 {
     public static class EditorGUIx
     {
-        private static bool isInit;
-
         /// <summary>
         /// GUI默认颜色
         /// </summary>
-        public static Color ColorDefault { get => GUI.backgroundColor; }
+        private static Color ColorDefault { get => GUI.backgroundColor; }
+        
+        #region Label 标签
+        
+        private static GUIStyle _boldLabel;
+        private static GUIStyle BoldLabel
+        {
+            get
+            {
+                if(_boldLabel == null)
+                {
+                    _boldLabel = new GUIStyle(EditorStyles.boldLabel);
+                    _boldLabel.padding.left = 14;
+                }
 
-        #region 切换按钮
+                return _boldLabel;
+            }
+        }
+
+        public static void LabelItem(string text)
+        {
+            GUILayout.Label(text, EditorGUIx.BoldLabel);
+        }
+
+        #endregion
+
+        #region Switch Button 切换按钮
+        
         /// <summary>
         /// GUI 开启色
         /// </summary>
-        public static Color ColorON { get; } = Color.green;
+        private static Color ColorOn { get; } = Color.green;
 
         /// <summary>
         /// GUI 关闭色
         /// </summary>
-        public static Color ColorOFF { get; } = Color.gray;
+        private static Color ColorOff { get; } = Color.gray;
 
-        public static GUILayoutOption[] LayoutBtnSmall = new GUILayoutOption[] { GUILayout.Width(50) }; //小尺寸
-        public static GUILayoutOption[] LayoutBtnMiddle = new GUILayoutOption[] { GUILayout.Width(120) }; //中尺寸
+        private static readonly GUILayoutOption[] LayoutBtnSmall = new GUILayoutOption[] { GUILayout.Width(50) }; //小尺寸
 
         /// <summary>
         /// 按钮 开关切换
         /// </summary>
-        /// <param name="material"></param>
-        /// <param name="matPropName">材质球属性名称</param>
-        /// <param name="txtON">自定义文本 ON</param>
-        /// <param name="txtOFF">自定义文本 OFF</param>
-        public static void BtnToggleLabel(string label, MaterialProperty matProp)
+        /// <param name="label"></param>
+        /// <param name="matProp"></param>
+        public static void SwitchButton(string label, MaterialProperty matProp)
         {
             EditorGUILayout.BeginHorizontal();
-
-            EditorGUILayout.PrefixLabel(label);
-            OnBtnToggle(matProp);
+            
+            EditorGUILayout.LabelField(label);
+            ToggleButton(matProp);
 
             EditorGUILayout.EndHorizontal();
         }
@@ -49,33 +69,31 @@ namespace BlurToonURP.EditorGUIx
         /// <summary>
         /// 按钮 开关切换
         /// </summary>
-        /// <param name="material"></param>
-        /// <param name="matPropName">材质球属性名称</param>
-        /// <param name="txtON">自定义文本 ON</param>
-        /// <param name="txtOFF">自定义文本 OFF</param>
-        public static void BtnToggleLabel(GUIContent label, MaterialProperty matProp)
+        /// <param name="label"></param>
+        /// <param name="matProp"></param>
+        public static void SwitchButton(GUIContent label, MaterialProperty matProp)
         {
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.PrefixLabel(label);
-            OnBtnToggle(matProp);
+            EditorGUILayout.LabelField(label);
+            ToggleButton(matProp);
 
             EditorGUILayout.EndHorizontal();
         }
 
-        private static void OnBtnToggle(MaterialProperty matProp)
+        private static void ToggleButton(MaterialProperty matProp)
         {
             if (matProp.floatValue == 0)
             {
-                GUI.color = ColorOFF;
-                if (GUILayout.Button("关", LayoutBtnSmall))
+                GUI.color = ColorOff;
+                if (GUILayout.Button("Off", LayoutBtnSmall))
                     matProp.floatValue = 1f;
                 GUI.color = ColorDefault;
             }
             else
             {
-                GUI.color = ColorON;
-                if (GUILayout.Button("开", LayoutBtnSmall))
+                GUI.color = ColorOn;
+                if (GUILayout.Button("On", LayoutBtnSmall))
                     matProp.floatValue = 0f;
                 GUI.color = ColorDefault;
             }
@@ -84,9 +102,10 @@ namespace BlurToonURP.EditorGUIx
         /// <summary>
         /// 按钮 开关切换 Pass是否开启
         /// </summary>
+        /// <param name="label"></param>
         /// <param name="material"></param>
-        /// <param name="shaderPassName">shader Pass名称</param>
-        public static void BtnToggleLabelPass(GUIContent label, Material material, string shaderPassName)
+        /// <param name="shaderPassName"></param>
+        public static void SwitchButtonPass(GUIContent label, Material material, string shaderPassName)
         {
             EditorGUILayout.BeginHorizontal();
 
@@ -94,24 +113,64 @@ namespace BlurToonURP.EditorGUIx
 
             if (material.GetShaderPassEnabled(shaderPassName))
             {
-                GUI.color = ColorON;
-                if (GUILayout.Button("开", LayoutBtnSmall))
+                GUI.color = ColorOn;
+                if (GUILayout.Button("On", LayoutBtnSmall))
                     material.SetShaderPassEnabled(shaderPassName, false);
                 GUI.color = ColorDefault;
             }
             else
             {
-                GUI.color = ColorOFF;
-                if (GUILayout.Button("关", LayoutBtnSmall))
+                GUI.color = ColorOff;
+                if (GUILayout.Button("Off", LayoutBtnSmall))
                     material.SetShaderPassEnabled(shaderPassName, true);
                 GUI.color = ColorDefault;
             }
 
             EditorGUILayout.EndHorizontal();
         }
+
+        /// <summary>
+        /// 切换开关按钮 及一个可调节的float
+        /// </summary>
+        /// <param name="shaderGUI"></param>
+        /// <param name="label"></param>
+        /// <param name="matProp"></param>
+        /// <param name="subLabel"></param>
+        /// <param name="subMatProp"></param>
+        public static void SwitchButtonAndSubFloat(this ShaderGUIBase shaderGUI, string label, MaterialProperty matProp, string subLabel, MaterialProperty subMatProp)
+        {
+            //暗部贴图1受光照影响开关及混合强度
+            EditorGUIx.SwitchButton(label, matProp);
+            if (matProp.floatValue.Equals(1))
+            {
+                EditorGUI.indentLevel++;
+                shaderGUI.MaterialEditor.RangeProperty(subMatProp, subLabel);
+                EditorGUI.indentLevel--;
+            }
+        }
+        
+        /// <summary>
+        /// 切换开关按钮 及一个可调节的float
+        /// </summary>
+        /// <param name="shaderGUI"></param>
+        /// <param name="label"></param>
+        /// <param name="matProp"></param>
+        /// <param name="subLabel"></param>
+        /// <param name="subMatProp"></param>
+        public static void SwitchButtonAndSubFloat(this ShaderGUIBase shaderGUI, GUIContent label, MaterialProperty matProp, string subLabel, MaterialProperty subMatProp)
+        {
+            //暗部贴图1受光照影响开关及混合强度
+            EditorGUIx.SwitchButton(label, matProp);
+            if (matProp.floatValue.Equals(1))
+            {
+                EditorGUI.indentLevel++;
+                shaderGUI.MaterialEditor.RangeProperty(subMatProp, subLabel);
+                EditorGUI.indentLevel--;
+            }
+        }
         #endregion
         
-        #region 下拉弹窗
+        #region Dropdown 下拉弹窗
         /// <summary>
         /// 下拉弹窗
         /// </summary>
@@ -163,45 +222,45 @@ namespace BlurToonURP.EditorGUIx
             Sub
         }
 
-        private static GUIStyle foldoutMain;
-        public static GUIStyle FoldoutMain
+        private static GUIStyle _foldoutMain;
+        private static GUIStyle FoldoutMain
         {
             get
             {
-                if(foldoutMain == null)
+                if(_foldoutMain == null)
                 {
-                    foldoutMain = new GUIStyle("ShurikenModuleTitle");
-                    foldoutMain.font = new GUIStyle(EditorStyles.boldLabel).font;
-                    foldoutMain.border = new RectOffset(7, 7, 4, 4);
-                    foldoutMain.fixedHeight = 22;
-                    foldoutMain.contentOffset = new Vector2(20f, -2f);
+                    _foldoutMain = new GUIStyle("ShurikenModuleTitle");
+                    _foldoutMain.font = new GUIStyle(EditorStyles.boldLabel).font;
+                    _foldoutMain.border = new RectOffset(7, 7, 4, 4);
+                    _foldoutMain.fixedHeight = 22;
+                    _foldoutMain.contentOffset = new Vector2(20f, -2f);
                 }
 
-                return foldoutMain;
+                return _foldoutMain;
             }
         }
 
-        private static GUIStyle foldoutSub;
-        public static GUIStyle FoldoutSub
+        private static GUIStyle _foldoutSub;
+        private static GUIStyle FoldoutSub
         {
             get
             {
-                if (foldoutSub == null)
+                if (_foldoutSub == null)
                 {
-                    foldoutSub = new GUIStyle("ShurikenModuleTitle");
-                    foldoutSub.font = new GUIStyle(EditorStyles.boldLabel).font;
-                    foldoutSub.border = new RectOffset(7, 7, 4, 4);
-                    foldoutSub.fixedHeight = 22;
-                    foldoutSub.contentOffset = new Vector2(32f, -2f);
-                    foldoutSub.padding = new RectOffset(5, 7, 4, 4);
+                    _foldoutSub = new GUIStyle("ShurikenModuleTitle");
+                    _foldoutSub.font = new GUIStyle(EditorStyles.boldLabel).font;
+                    _foldoutSub.border = new RectOffset(7, 7, 4, 4);
+                    _foldoutSub.fixedHeight = 22;
+                    _foldoutSub.contentOffset = new Vector2(20f, -2f);
+                    //foldoutSub.padding = new RectOffset(5, 7, 4, 4);
                 }
 
-                return foldoutSub;
+                return _foldoutSub;
             }
         }
 
         //折叠面板的打开状态
-        private static readonly Dictionary<string, bool> foldoutIsOpenDic = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> FoldoutIsOpenDic = new Dictionary<string, bool>();
 
         /// <summary>
         /// 折叠面板
@@ -212,6 +271,7 @@ namespace BlurToonURP.EditorGUIx
         public static void FoldoutPanel(string title, System.Action panelGUI, EFoldoutStyleType styleType = EFoldoutStyleType.Main)
         {
             GUIStyle style;
+            Rect rect;
             float toggleRectXoffset = 0f;
 
             //折叠面板类型
@@ -219,23 +279,27 @@ namespace BlurToonURP.EditorGUIx
             {
                 case EFoldoutStyleType.Main:
                     style = FoldoutMain;
+                    rect = GUILayoutUtility.GetRect(16f, 22f, style);
                     toggleRectXoffset = 4f;
                     break;
                 case EFoldoutStyleType.Sub:
                     style = FoldoutSub;
-                    toggleRectXoffset = 16f;
+                    rect = GUILayoutUtility.GetRect(16f, 22f, style);
+                    rect.x += 14f;
+                    rect.width -= 14f;
+                    toggleRectXoffset = 4f;
                     break;
                 default:
                     style= new GUIStyle("ShurikenModuleTitle");
+                    rect = GUILayoutUtility.GetRect(16f, 22f, style);
                     break;
             }
-            var rect = GUILayoutUtility.GetRect(16f, 22f, style);
+            
             GUI.Box(rect, title, style);
 
             //当前面板的打开状态
-            bool isOpen = false;
-            if (!foldoutIsOpenDic.TryGetValue(title, out isOpen))
-                foldoutIsOpenDic.Add(title, isOpen);
+            if (!FoldoutIsOpenDic.TryGetValue(title, out bool isOpen))
+                FoldoutIsOpenDic.Add(title, isOpen);
 
             //当前事件处理
             var e = Event.current;
@@ -246,7 +310,7 @@ namespace BlurToonURP.EditorGUIx
             }
             if (e.type == EventType.MouseDown && rect.Contains(e.mousePosition))
             {
-                foldoutIsOpenDic[title] = !isOpen;
+                FoldoutIsOpenDic[title] = !isOpen;
                 e.Use();
             }
 
@@ -262,14 +326,14 @@ namespace BlurToonURP.EditorGUIx
         }
         #endregion
         
-        #region 彩色文本
+        #region Text 彩色文本
         /// <summary>
         /// 标签 彩色
         /// </summary>
         /// <param name="text"></param>
         /// <param name="color"></param>
         /// <param name="style"></param>
-        public static void LabelTextColor(string text, Color color, GUIStyle style = null)
+        private static void LabelTextColor(string text, Color color, GUIStyle style = null)
         {
             if (style == null)
                 style = EditorStyles.label;

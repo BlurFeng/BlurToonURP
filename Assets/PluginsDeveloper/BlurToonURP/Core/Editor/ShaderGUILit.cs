@@ -11,81 +11,104 @@ namespace BlurToonURP.EditorGUIx
 
             EditorGUIx.FoldoutPanel("【基础贴图 BaseMap】基础贴图及暗部贴图", PanelMainBasicMap);
             EditorGUIx.FoldoutPanel("【外描边 Outline】粗细、颜色", PanelMainOutline);
+            EditorGUIx.FoldoutPanel("【光照设置 LightSetting】光照开关、光照强度", PanelMainGlobalLight);
+            
         }
 
-        #region 主面板-基础贴图
-        private static readonly GUIContent contentBaseMap = new GUIContent("基础贴图", "基础色 : 贴图采样色(sRGB) × 自定义色(RGB), 默认:白色)");
-        private static readonly GUIContent contentBaseNormalMap = new GUIContent("法线贴图", "法线偏移 : 贴图采样矢量(sRGB)进行法线偏移");
-        private static readonly GUIContent contentBaseMapShadeThresholdMap = new GUIContent("暗部阈值贴图", "通过阈值贴图控制暗部1的分布与强度。暗部强度 : 纹理采样(linear)");
+        #region BaseMap 基础贴图
+        private static readonly GUIContent ContentBaseMap = new GUIContent("基础贴图", "基础色 : 贴图采样色(sRGB) × 自定义色(RGB), 默认:白色)");
+        private static readonly GUIContent ContentBaseMapShadeThresholdMap = new GUIContent("暗部阈值贴图", "通过阈值贴图控制暗部1的分布与强度。暗部强度 : 纹理采样(linear)");
 
         /// <summary>
         /// 关键词 暗部阈值贴图
         /// </summary>
-        private const string m_MatKeywordShadeThresholdMap = "_BASEMAP_SHADE_THRESHOLDMAP_ON";
+        private const string MatKeywordShadeThresholdMap = "_BASEMAP_SHADE_THRESHOLDMAP_ON";
 
         /// <summary>
         /// 主面板 基础贴图
         /// </summary>
-        /// <param name="material"></param>
         private void PanelMainBasicMap()
         {
-
-            //条目 基础贴图
-            GUILayout.Label("基础贴图", EditorStyles.boldLabel);
+            //基础贴图
+            EditorGUIx.LabelItem("基础贴图");
             EditorGUILayout.BeginHorizontal();
-            MaterialEditor.TexturePropertySingleLine(contentBaseMap, GetMaterialProperty("_BaseMap"), GetMaterialProperty("_BaseColor"));
+            MaterialEditor.TexturePropertySingleLine(ContentBaseMap, GetMaterialProperty("_BaseMap"), GetMaterialProperty("_BaseColor"));
+            EditorGUILayout.EndHorizontal();
+            
+            //基础贴图混合颜色
+            MaterialEditor.ColorProperty(GetMaterialProperty("_BaseMapBlendColor"), "混合颜色");
+            //基础贴图混合颜色强度
+            MaterialEditor.RangeProperty(GetMaterialProperty("_BaseMapBlendColorIntensity"), "混合强度");
+            
+            //暗部颜色1
+            EditorGUIx.LabelItem("暗部颜色");
+            EditorGUILayout.BeginHorizontal();
+            MaterialEditor.ColorProperty(GetMaterialProperty("_Shade1Color"),"暗部1颜色");
             EditorGUILayout.EndHorizontal();
 
+            //暗部颜色2
+            EditorGUILayout.BeginHorizontal();
+            MaterialEditor.ColorProperty(GetMaterialProperty("_Shade2Color"), "暗部2颜色");
+            EditorGUILayout.EndHorizontal();
+
+            //色阶分布
+            EditorGUIx.LabelItem("阴影色阶分布与模糊");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBrightShade1Step"), "亮部→暗部1 : 位置");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBrightShade1Blur"), "亮部→暗部1 : 模糊");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatShade1Shade2Step"), "暗部1→暗部2 : 位置");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatShade1Shade2Blur"), "暗部1→暗部2 : 模糊");
+            EditorGUILayout.Space();
             
+            //暗部阈值贴图
+            EditorGUIx.FoldoutPanel("暗部阈值贴图", PanelSubShadeThresholdMap, EditorGUIx.EFoldoutStyleType.Sub);
         }
 
         /// <summary>
         /// 子界面 暗部阈值贴图
         /// </summary>
-        /// <param name="material"></param>
         private void PanelSubShadeThresholdMap()
         {
             var matPropToggleShadeThresholdMap = GetMaterialProperty("_ToggleShadeThresholdMap");
-            EditorGUIx.BtnToggleLabel("暗部阈值贴图-主开关", matPropToggleShadeThresholdMap);
-            if (matPropToggleShadeThresholdMap.floatValue == 1)
-                Material.EnableKeyword(m_MatKeywordShadeThresholdMap);
+            EditorGUIx.SwitchButton("暗部阈值贴图-主开关", matPropToggleShadeThresholdMap);
+            if (matPropToggleShadeThresholdMap.floatValue.Equals(1))
+                Material.EnableKeyword(MatKeywordShadeThresholdMap);
             else
             {
-                Material.DisableKeyword(m_MatKeywordShadeThresholdMap);
+                Material.DisableKeyword(MatKeywordShadeThresholdMap);
                 return;
             }
 
             //条目 暗部阈值贴图
             var matPropTexShadeThresholdMap = GetMaterialProperty("_TexShadeThresholdMap");
-            MaterialEditor.TexturePropertySingleLine(contentBaseMapShadeThresholdMap, matPropTexShadeThresholdMap);
+            MaterialEditor.TexturePropertySingleLine(ContentBaseMapShadeThresholdMap, matPropTexShadeThresholdMap);
             MaterialEditor.TextureScaleOffsetProperty(matPropTexShadeThresholdMap);
             //条目 暗部阈值贴图强度
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatShadeThresholdMapIntensity"), "强度");
         }
         #endregion
         
-        #region 主面板-外描边
-        private static GUIContent contentOutline = new GUIContent("外描边-主开关", "设置外描边开启或关闭。");
-        private static GUIContent contentOutlineType = new GUIContent("描边类型", "法线(顶点色法线)外扩描边。 VertexNormal : 顶点法线，VertexColor : 顶点颜色");
-        private static GUIContent contentOutlineWidthType = new GUIContent("宽度类型", "Same : 相同宽度，Scaling : 变化宽度");
-        private static GUIContent contentOutlineBaseMapBlend = new GUIContent("基础贴图混合", "与基础贴图的颜色进行混合，使描边色更加自然。");
+        #region Outline 外描边
+        private static readonly GUIContent ContentOutline = new GUIContent("外描边-主开关", "设置外描边开启或关闭。");
+        private static readonly GUIContent ContentOutlineType = new GUIContent("描边类型", "法线(顶点色法线)外扩描边。 VertexNormal : 顶点法线，VertexColor : 顶点颜色");
+        private static readonly GUIContent ContentOutlineWidthType = new GUIContent("宽度类型", "Same : 相同宽度，Scaling : 变化宽度");
+        private static readonly GUIContent ContentOutlineBaseMapBlend = new GUIContent("基础贴图混合", "与基础贴图的颜色进行混合，使描边色更加自然。");
 
         /// <summary>
         /// 关键词 外描边 开启
         /// </summary>
-        private const string m_MatKeywordOutlineOn = "_OUTLINE_ON";
+        private const string MatKeywordOutlineOn = "_OUTLINE_ON";
         /// <summary>
         /// 关键词 外描边 相同宽度
         /// </summary>
-        private const string m_MatKeywordOutlineSameWidth = "_OUTLINE_WIDTH_SAME";
+        private const string MatKeywordOutlineSameWidth = "_OUTLINE_WIDTH_SAME";
         /// <summary>
         /// 关键词 外描边 变化宽度
         /// </summary>
-        private const string m_MatKeywordOutlineScaling = "_OUTLINE_WIDTH_SCALING";
+        private const string MatKeywordOutlineScaling = "_OUTLINE_WIDTH_SCALING";
         /// <summary>
         /// 通道名称 外描边
         /// </summary>
-        private const string m_MatPassNameOutline = "Outline";
+        private const string MatPassNameOutline = "Outline";
 
         /// <summary>
         /// 描边类型
@@ -96,10 +119,12 @@ namespace BlurToonURP.EditorGUIx
             /// 顶点法线
             /// </summary>
             VertexNormal,
+            
             /// <summary>
             /// 顶点颜色
             /// </summary>
             VertexColor,
+            
             /// <summary>
             /// 顶点切线
             /// </summary>
@@ -127,34 +152,34 @@ namespace BlurToonURP.EditorGUIx
         private void PanelMainOutline()
         {
             //条目 主开关
-            EditorGUIx.BtnToggleLabelPass(contentOutline, Material, m_MatPassNameOutline);
+            EditorGUIx.SwitchButtonPass(ContentOutline, Material, MatPassNameOutline);
             //设置 关键词
-            if (Material.GetShaderPassEnabled(m_MatPassNameOutline) == true)
+            if (Material.GetShaderPassEnabled(MatPassNameOutline))
             {
-                Material.EnableKeyword(m_MatKeywordOutlineOn);
+                Material.EnableKeyword(MatKeywordOutlineOn);
             }
             else
             {
-                Material.DisableKeyword(m_MatKeywordOutlineOn);
+                Material.DisableKeyword(MatKeywordOutlineOn);
                 return;
             }
 
             //条目 描边类型
-            EditorGUIx.DropdownEnum(contentOutlineType, GetMaterialProperty("_FloatOutlineType"), typeof(EOutlineType), MaterialEditor);
+            EditorGUIx.DropdownEnum(ContentOutlineType, GetMaterialProperty("_FloatOutlineType"), typeof(EOutlineType), MaterialEditor);
 
             //条目 描边宽度类型
             var matPropFloatOutlineWidthType = GetMaterialProperty("_FloatOutlineWidthType");
-            EditorGUIx.DropdownEnum(contentOutlineWidthType, matPropFloatOutlineWidthType, typeof(EOutlineWidthType), MaterialEditor);
+            EditorGUIx.DropdownEnum(ContentOutlineWidthType, matPropFloatOutlineWidthType, typeof(EOutlineWidthType), MaterialEditor);
             //应用材质球属性-描边类型
             switch ((EOutlineWidthType)matPropFloatOutlineWidthType.floatValue)
             {
                 case EOutlineWidthType.Same: //相同宽度
-                    Material.EnableKeyword(m_MatKeywordOutlineSameWidth);
-                    Material.DisableKeyword(m_MatKeywordOutlineScaling);
+                    Material.EnableKeyword(MatKeywordOutlineSameWidth);
+                    Material.DisableKeyword(MatKeywordOutlineScaling);
                     break;
                 case EOutlineWidthType.Scaling: //距离缩放
-                    Material.DisableKeyword(m_MatKeywordOutlineSameWidth);
-                    Material.EnableKeyword(m_MatKeywordOutlineScaling);
+                    Material.DisableKeyword(MatKeywordOutlineSameWidth);
+                    Material.EnableKeyword(MatKeywordOutlineScaling);
                     break;
             }
 
@@ -166,8 +191,8 @@ namespace BlurToonURP.EditorGUIx
 
             //条目 基础贴图颜色混合
             var matPropToggleOutlineBaseMapBlend = GetMaterialProperty("_ToggleOutlineBaseMapBlend");
-            EditorGUIx.BtnToggleLabel(contentOutlineBaseMapBlend, matPropToggleOutlineBaseMapBlend);
-            if (matPropToggleOutlineBaseMapBlend.floatValue == 1)
+            EditorGUIx.SwitchButton(ContentOutlineBaseMapBlend, matPropToggleOutlineBaseMapBlend);
+            if (matPropToggleOutlineBaseMapBlend.floatValue.Equals(1))
             {
                 EditorGUI.indentLevel++;
                 //条目 基础贴图颜色混合强度
@@ -176,6 +201,184 @@ namespace BlurToonURP.EditorGUIx
             }
             EditorGUILayout.Space();
         }
+        #endregion
+        
+        #region 主面板-光照设置
+        private static readonly GUIContent ContentGlobalLightGIIntensity = new GUIContent("光照强度", "环境光照强度 : 例如“光照探针”的影响强度。");
+        private static readonly GUIContent ContentLightHorLock = new GUIContent("光照水平锁定", "将光照的高度锁定至水平，使暗部在水平轴向进行变化。");
+        private static readonly GUIContent ContentLightExposure = new GUIContent("曝光设置", "设定全局曝光强度、局部曝光强度。");
+
+        /// <summary>
+        /// 主面板 光照设置
+        /// </summary>
+        private void PanelMainGlobalLight()
+        {
+            //条目 全局光照强度
+            GUILayout.Label(ContentGlobalLightGIIntensity, EditorStyles.boldLabel);
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRealtimeLightIntensity"), "实时光照强度");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatEnvLightIntensity"), "环境光照强度");
+            EditorGUILayout.Space();
+
+            //曝光设置
+            GUILayout.Label(ContentLightExposure, EditorStyles.boldLabel);
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatGlobalExposureIntensity"), "全局曝光强度");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBaseMapExposureIntensity"), "基础贴图亮部曝光强度");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBaseMapShade1ExposureIntensity"), "基础贴图暗部1曝光强度");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBaseMapShade2ExposureIntensity"), "基础贴图暗部2曝光强度");
+            EditorGUILayout.Space();
+
+            //子面板 附加光照设置
+            EditorGUIx.FoldoutPanel("● 附加光照", PanelSubAddLightSetting, EditorGUIx.EFoldoutStyleType.Sub);
+            //子面板 光照开关
+            EditorGUIx.FoldoutPanel("● 光照开关", PanelSubGlobalLightToggle, EditorGUIx.EFoldoutStyleType.Sub);
+            //子面板 阴影接收
+            EditorGUIx.FoldoutPanel("● 阴影设置", PanelSubShadowReceive, EditorGUIx.EFoldoutStyleType.Sub);
+            //子面板 内置光照
+            EditorGUIx.FoldoutPanel("● 内置光照", PanelSubBuiltInLight, EditorGUIx.EFoldoutStyleType.Sub);
+            //子面板 光照方向锁定
+            EditorGUIx.FoldoutPanel("● 光照方向锁定", PanelSubLightDirLock, EditorGUIx.EFoldoutStyleType.Sub);
+
+            EditorGUILayout.Space();
+        }
+
+        #region 子面板 附加光照设置
+        /// <summary>
+        /// 关键词 附加光照 开启
+        /// </summary>
+        private const string MatKeywordAddLightOn = "_ADDLIGHT_ON";
+
+        /// <summary>
+        /// 子界面 附加光照设置
+        /// </summary>
+        private void PanelSubAddLightSetting()
+        {
+            //条目 自发光主开关
+            var matPropToggleAddLight = GetMaterialProperty("_ToggleAddLight");
+            EditorGUIx.SwitchButton("附加光照-主开关", matPropToggleAddLight);
+            if (matPropToggleAddLight.floatValue.Equals(1))
+                Material.EnableKeyword(MatKeywordAddLightOn);
+            else
+            {
+                Material.DisableKeyword(MatKeywordAddLightOn);
+                return;
+            }
+
+            //条目 强度
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatAddLightIntensity"), "强度");
+            EditorGUILayout.Space();
+        }
+        #endregion
+
+        #region 子面板 光照开关
+        /// <summary>
+        /// 子面板 光照开关
+        /// </summary>
+        private void PanelSubGlobalLightToggle()
+        {
+            GUILayout.Label("设置会受到光照影响的贴图或效果", EditorStyles.boldLabel);
+            
+            //基础贴图受光照影响开关及混合强度
+            this.SwitchButtonAndSubFloat(
+                "基础贴图", GetMaterialProperty("_ToggleGlobalLightBaseMap"),
+                "强度", GetMaterialProperty("_GlobalLightBaseMapMixedIntensity"));
+            //暗部贴图1受光照影响开关及混合强度
+            this.SwitchButtonAndSubFloat(
+                "暗部贴图1", GetMaterialProperty("_ToggleGlobalLightBaseShade1"),
+                "强度", GetMaterialProperty("_GlobalLightBaseShade1MixedIntensity"));
+            //暗部贴图2受光照影响开关及混合强度
+            this.SwitchButtonAndSubFloat(
+                "暗部贴图2", GetMaterialProperty("_ToggleGlobalLightBaseShade2"),
+                "强度", GetMaterialProperty("_GlobalLightBaseShade2MixedIntensity"));
+        }
+        #endregion
+
+        #region 子面板 阴影设置
+        /// <summary>
+        /// 通道名称 阴影投射
+        /// </summary>
+        private const string MatPassNameShadowCaster = "ShadowCaster";
+
+        private static readonly GUIContent ContentGlobalLightShadowCaster = new GUIContent("阴影投射", "向场景投射阴影，可通过“透明度裁切阈值”来调整半透明物体的投影效果。");
+        private static readonly GUIContent ContentGlobalLightShadowReceive = new GUIContent("阴影接收", "接收场景的阴影，可通过“强度调整”来改变阴影的最终效果。");
+
+        /// <summary>
+        /// 子界面 阴影接收
+        /// </summary>
+        private void PanelSubShadowReceive()
+        {
+            //条目 阴影投射开关
+            EditorGUIx.SwitchButtonPass(ContentGlobalLightShadowCaster, Material, MatPassNameShadowCaster);
+
+            //条目 阴影接收开关
+            this.SwitchButtonAndSubFloat(
+                ContentGlobalLightShadowReceive, GetMaterialProperty("_ToggleShadowReceive"),
+                "强度", GetMaterialProperty("_FloatShadowIntensity"));
+            EditorGUILayout.Space();
+        }
+        #endregion
+
+        #region 子面板 内置光照
+        private static readonly GUIContent ContentGlobalLightBuiltInLight = new GUIContent("内置光照", "材质球专属的内置光照，开启内置光照时，场景光照将会失效。");
+        private static readonly GUIContent ContentGlobalLightBuiltInLightColor = new GUIContent("内置光照颜色", "为内置光照设置单独的颜色，不启用时默认使用当前环境光照颜色。");
+
+        /// <summary>
+        /// 关键词 内置光照
+        /// </summary>
+        private const string MatKeywordBuiltInLight = "_BUILTINLIGHT_ON";
+
+        /// <summary>
+        /// 子界面 内置光照
+        /// </summary>
+        private void PanelSubBuiltInLight()
+        {
+            //条目 内置光照开关
+            var matPropToggleBuiltInLight = GetMaterialProperty("_ToggleBuiltInLight");
+            EditorGUIx.SwitchButton(ContentGlobalLightBuiltInLight, matPropToggleBuiltInLight);
+            //内置光照开关折叠
+            if (matPropToggleBuiltInLight.floatValue.Equals(1))
+                Material.EnableKeyword(MatKeywordBuiltInLight);
+            else
+            {
+                Material.DisableKeyword(MatKeywordBuiltInLight);
+                return;
+            }
+
+            //条目 X轴位置 Y轴位置 Z轴位置
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBuiltInLightAxisX"), "X轴位置");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBuiltInLightAxisY"), "Y轴位置");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBuiltInLightAxisZ"), "Z轴位置");
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBuiltInLightDirBlend"), "方向混合强度");
+            //条目 内置光照颜色
+            var matPropToggleBuiltInLightColor = GetMaterialProperty("_ToggleBuiltInLightColor");
+            EditorGUIx.SwitchButton(ContentGlobalLightBuiltInLightColor, matPropToggleBuiltInLightColor);
+            //内置光照开关折叠
+            if (matPropToggleBuiltInLightColor.floatValue.Equals(1))
+            {
+                EditorGUI.indentLevel++;
+                //条目 内置光照颜色
+                MaterialEditor.ColorProperty(GetMaterialProperty("_ColorBuiltInLightColor"), "光照颜色");
+                //条目 内置光照强度
+                MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBuiltInLightColorBlend"), "混合强度");
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.Space();
+        }
+        #endregion
+
+        #region 子面板 光照方向锁定
+        /// <summary>
+        /// 子界面 点光源设置
+        /// </summary>
+        private void PanelSubLightDirLock()
+        {
+            //光照方向锁定
+            GUILayout.Label(ContentLightHorLock, EditorStyles.boldLabel);
+            //条目 基础贴图
+            EditorGUIx.SwitchButton("基础贴图", GetMaterialProperty("_ToggleLightHorLockBaseMap"));
+            EditorGUILayout.Space();
+        }
+        #endregion
         #endregion
     }
 }
