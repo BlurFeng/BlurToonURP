@@ -34,6 +34,11 @@ namespace BlurToonURP.EditorGUIx
         {
             GUILayout.Label(text, EditorGUIx.BoldLabel);
         }
+        
+        public static void LabelItem(GUIContent content)
+        {
+            GUILayout.Label(content, EditorGUIx.BoldLabel);
+        }
 
         #endregion
 

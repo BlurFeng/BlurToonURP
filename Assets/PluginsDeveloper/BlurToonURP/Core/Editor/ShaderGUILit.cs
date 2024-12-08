@@ -214,13 +214,13 @@ namespace BlurToonURP.EditorGUIx
         private void PanelMainGlobalLight()
         {
             //条目 全局光照强度
-            GUILayout.Label(ContentGlobalLightGIIntensity, EditorStyles.boldLabel);
+            EditorGUIx.LabelItem(ContentGlobalLightGIIntensity);
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRealtimeLightIntensity"), "实时光照强度");
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatEnvLightIntensity"), "环境光照强度");
             EditorGUILayout.Space();
 
             //曝光设置
-            GUILayout.Label(ContentLightExposure, EditorStyles.boldLabel);
+            EditorGUIx.LabelItem(ContentLightExposure);
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatGlobalExposureIntensity"), "全局曝光强度");
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBaseMapExposureIntensity"), "基础贴图亮部曝光强度");
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatBaseMapShade1ExposureIntensity"), "基础贴图暗部1曝光强度");
@@ -275,7 +275,7 @@ namespace BlurToonURP.EditorGUIx
         /// </summary>
         private void PanelSubGlobalLightToggle()
         {
-            GUILayout.Label("设置会受到光照影响的贴图或效果", EditorStyles.boldLabel);
+            EditorGUIx.LabelItem(new GUIContent("设置受到光照影响的项目", "开启后，光照颜色会影响最终呈现的颜色效果。"));
             
             //基础贴图受光照影响开关及混合强度
             this.SwitchButtonAndSubFloat(
@@ -373,7 +373,7 @@ namespace BlurToonURP.EditorGUIx
         private void PanelSubLightDirLock()
         {
             //光照方向锁定
-            GUILayout.Label(ContentLightHorLock, EditorStyles.boldLabel);
+            EditorGUIx.LabelItem(ContentLightHorLock);
             //条目 基础贴图
             EditorGUIx.SwitchButton("基础贴图", GetMaterialProperty("_ToggleLightHorLockBaseMap"));
             EditorGUILayout.Space();
