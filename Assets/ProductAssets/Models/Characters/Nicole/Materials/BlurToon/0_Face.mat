@@ -14,6 +14,9 @@ Material:
   - _BASEMAP_SHADE_THRESHOLDMAP_ON
   - _OUTLINE_ON
   - _OUTLINE_WIDTH_SAME
+  - _RIMLIGHT_ON
+  - _RIMLIGHT_SHADEMASK_COLOR_ON
+  - _RIMLIGHT_SHADEMASK_ON
   m_InvalidKeywords:
   - _
   - _SURFACETYPE_OPAQUE
@@ -72,6 +75,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SphereCube:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TexRimLightMaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -138,6 +145,12 @@ Material:
     - _FloatOutlineWidthType: 0
     - _FloatOutlintWidthType: 0
     - _FloatRealtimeLightIntensity: 5
+    - _FloatRimLightInsideDistance: 0.18
+    - _FloatRimLightIntensity: 0.8
+    - _FloatRimLightMaskMapIntensity: 0
+    - _FloatRimLightShadeColorIntensity: 0.8
+    - _FloatRimLightShadeMaskIntensity: 1
+    - _FloatRimLightShadeMaskOffset: 0.4
     - _FloatShade1Shade2Blur: 1
     - _FloatShade1Shade2Step: 0.4
     - _FloatShadeThresholdMapIntensity: 0.3
@@ -145,6 +158,8 @@ Material:
     - _GlobalLightBaseMapMixedIntensity: 0.5
     - _GlobalLightBaseShade1MixedIntensity: 0.5
     - _GlobalLightBaseShade2MixedIntensity: 0.5
+    - _GlobalLightRimLightMixedIntensity: 0.5
+    - _GlobalLightRimLightShadeMixedIntensity: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.1
     - _GlossyReflections: 1
@@ -172,9 +187,17 @@ Material:
     - _ToggleGlobalLightBaseMap: 1
     - _ToggleGlobalLightBaseShade1: 1
     - _ToggleGlobalLightBaseShade2: 1
+    - _ToggleGlobalLightRimLight: 1
+    - _ToggleGlobalLightRimLightShade: 1
     - _ToggleLightHorLockBaseMap: 1
+    - _ToggleLightHorLockRimLight: 1
     - _ToggleNormalMapOnBaseMap: 0
     - _ToggleOutlineBaseMapBlend: 1
+    - _ToggleRimLight: 1
+    - _ToggleRimLightHard: 0
+    - _ToggleRimLightShadeColor: 1
+    - _ToggleRimLightShadeColorHard: 0
+    - _ToggleRimLightShadeMask: 1
     - _ToggleShadeThresholdMap: 1
     - _ToggleShadowCaster: 1
     - _ToggleShadowReceive: 1
@@ -189,6 +212,8 @@ Material:
     - _ColorBaseMapBlendColor: {r: 1, g: 1, b: 1, a: 1}
     - _ColorBuiltInLightColor: {r: 1, g: 1, b: 1, a: 1}
     - _ColorOutlineColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+    - _ColorRimLightColor: {r: 1, g: 1, b: 1, a: 0.29803923}
+    - _ColorRimLightShadeColor: {r: 0.7264151, g: 0.19517481, b: 0.11307406, a: 0.29803923}
     - _ColorShade1Color: {r: 0.7, g: 0.7, b: 0.7, a: 1}
     - _ColorShade2Color: {r: 0.4, g: 0.4, b: 0.4, a: 1}
     - _EdgeColor: {r: 0, g: 0, b: 0, a: 1}

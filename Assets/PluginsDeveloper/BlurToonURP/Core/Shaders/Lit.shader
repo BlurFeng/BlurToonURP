@@ -34,12 +34,30 @@ Shader "BlurToonURP/Lit"
         
         //----------- Outline 外描边 -----------
         _FloatOutlineType("Outline Type", Float) = 0 //外描边类型 0=VertexNormal 1=VertexColor 2=VertexTangent
-        _FloatOutlineWidthType("Outline Width Type", Float) = 0 //外描边宽度类型 ●记录值 确认当前的keywords设置
+        _FloatOutlineWidthType("Outline Width Type", Float) = 0 //外描边宽度类型 ●记录值 确认对应的keywords设置
         [HDR]_ColorOutlineColor ("Outline Color", Color) = (0.4,0.4,0.4,1) //颜色
         _FloatOutlineWidth ("Outline Width", Float ) = 1.5 //宽度
         _ToggleOutlineBaseMapBlend ("Outline BaseMapBlend", Float ) = 1 //开关 基础贴图混合
         _FloatOutlineBaseMapBlendIntensity ("Outline BaseMapBlend Intensity", Range(0, 1) ) = 1 //基础贴图混合 强度
         
+        
+        //----------- Rim Light 边缘光 -----------
+        _ToggleRimLight ("RimLight Toggle", Float) = 0 //边缘光开关 ●仅用于记录 设置关键词开启
+        [HDR] _ColorRimLightColor ("RimLight Color", Color) = (1, 1, 1, 0.3) //颜色
+        _FloatRimLightIntensity ("RimLight Intensity", Range(0, 1)) = 0.8 //强度
+        _FloatRimLightInsideDistance ("RimLight Inside Distance", Range(0, 1)) = 0.18 //内部距离
+        _ToggleRimLightHard ("RimLight Hard", Float) = 0 //开关 硬边缘
+        //暗部遮罩
+        _ToggleRimLightShadeMask ("RimLight ShadeMask Toggle", Float ) = 0 //开关 暗部遮罩 ●仅用于记录 设置关键词开启
+        _FloatRimLightShadeMaskIntensity ("RimLight ShadeMask Intensity", Range(0, 1)) = 1 //暗部遮罩强度
+        _FloatRimLightShadeMaskOffset ("RimLight ShadeMask Offset", Range(-1, 1)) = 0.4 //暗部遮罩偏移
+        _ToggleRimLightShadeColor ("RimLight ShadeColor", Float ) = 0 //开关 暗部颜色 ●仅用于记录 设置关键词开启
+        [HDR]_ColorRimLightShadeColor ("RimLight ShadeColor", Color) = (1,1,1,0.3) //暗部颜色
+        _FloatRimLightShadeColorIntensity ("RimLight ShadeColor Intensity", Range(0, 1)) = 0.8 //暗部颜色 强度
+        _ToggleRimLightShadeColorHard ("RimLight ShadeColor Hard", Float ) = 0 //暗部颜色 硬边缘
+        //遮罩贴图
+        _TexRimLightMaskMap ("RimLight MaskMap", 2D) = "white" {} //遮罩贴图
+        _FloatRimLightMaskMapIntensity ("RimLight MaskMap Intensity", Range(-1, 1)) = 0 //遮罩贴图 强度
         
         //----------- Light 光照设置 -----------
         _FloatRealtimeLightIntensity ("Realtime Light Intensity", Range(0, 10)) = 5 //实时光照强度
@@ -62,6 +80,10 @@ Shader "BlurToonURP/Lit"
         _GlobalLightBaseShade1MixedIntensity ("GlobalLight BaseShade1 Mixed Intensity", Range(0.001, 1)) = 0.5//暗部1和光照颜色的混合强度 0-1
         _ToggleGlobalLightBaseShade2 ("GlobalLight BaseShade2 Toggle", Float) = 1 //暗部2
         _GlobalLightBaseShade2MixedIntensity ("GlobalLight BaseShade1 Mixed Intensity", Range(0.001, 1)) = 0.5//暗部2和光照颜色的混合强度 0-1
+        _ToggleGlobalLightRimLight ("GlobalLight RimLight Toggle", Float) = 1 //边缘光
+        _GlobalLightRimLightMixedIntensity ("GlobalLight RimLight Mixed Intensity", Range(0.001, 1)) = 0.5//边缘光和光照颜色的混合强度 0-1
+        _ToggleGlobalLightRimLightShade ("GlobalLight RimLightShade Toggle", Float) = 1 //边缘光暗部
+        _GlobalLightRimLightShadeMixedIntensity ("GlobalLight RimLightShade Mixed Intensity", Range(0.001, 1)) = 0.5//边缘光暗部和光照颜色的混合强度 0-1
         
         //阴影设置
         _ToggleShadowCaster ("ShadowCaster Toggle", Float ) = 1 //开关 阴影投射 ●仅用于记录 设置Pass开启
@@ -74,13 +96,15 @@ Shader "BlurToonURP/Lit"
         _FloatBuiltInLightAxisY ("BuiltInLight YAxis", Range(-1, 1)) = 1
         _FloatBuiltInLightAxisZ ("BuiltInLight ZAxis", Range(-1, 1)) = -1
         _FloatBuiltInLightDirBlend ("BuiltInLight Dir Blend", Range(0, 1)) = 0.5
+        
         //内置光照颜色
         _ToggleBuiltInLightColor ("BuiltInLight Color Toggle", Float) = 0 //开关 内置光照
         [HDR]_ColorBuiltInLightColor ("BuiltInLight Color", Color) = (1,1,1,1) //内置光照颜色
         _FloatBuiltInLightColorBlend ("BuiltInLight Color Blend", Range(0, 1)) = 1 //内置光照颜色 混合强度
         
         //光照水平方向锁定
-        _ToggleLightHorLockBaseMap ("HorizontalLock BaseMap", Float ) = 0 //光照水平锁定 基础贴图
+        _ToggleLightHorLockBaseMap ("HorizontalLock BaseMap", Float ) = 0 //基础贴图
+        _ToggleLightHorLockRimLight ("HorizontalLock Rim Light", Float) = 0 //边缘光
     }
 
     SubShader
@@ -103,12 +127,16 @@ Shader "BlurToonURP/Lit"
             // Keywords ------------------------------------- Start
             // GPU Instancing
             #pragma multi_compile_instancing
+            
             // BlurToonURP Keywords
             #pragma shader_feature_local _BASEMAP_SHADE_THRESHOLDMAP_ON //暗部阈值贴图
-            //关键词 附加光照
-			#pragma shader_feature_local _ADDLIGHT_ON
-            //关键词 内置光照
-            #pragma shader_feature_local _BUILTINLIGHT_ON
+			#pragma shader_feature_local _ADDLIGHT_ON // 附加光照
+            #pragma shader_feature_local _BUILTINLIGHT_ON // 内置光照
+            //边缘光
+            #pragma shader_feature_local _RIMLIGHT_ON
+            #pragma shader_feature_local _RIMLIGHT_SHADEMASK_ON
+            #pragma shader_feature_local _RIMLIGHT_SHADEMASK_COLOR_ON
+            #pragma shader_feature_local _RIMLIGHT_MASKMAP_ON
             // Keywords ------------------------------------- End
 
             #pragma vertex vert //顶点着色器
@@ -152,7 +180,16 @@ Shader "BlurToonURP/Lit"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            //定义的字段
+            //定义的字段属性
+            //暗部阈值贴图
+            #if defined(_BASEMAP_SHADE_THRESHOLDMAP_ON)
+            TEXTURE2D(_TexShadeThresholdMap); SAMPLER(sampler_TexShadeThresholdMap); //暗部阈值贴图
+            #endif
+
+            #if defined(_RIMLIGHT_ON) && defined(_RIMLIGHT_MASKMAP_ON)
+            TEXTURE2D(_TexRimLightMaskMap); SAMPLER(sampler_TexRimLightMaskMap);
+            #endif
+            
             CBUFFER_START(UnityPerMaterial)
             //-------- BaseMap 基础纹理 --------
             //已在"Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"中定义的内容。
@@ -173,7 +210,6 @@ Shader "BlurToonURP/Lit"
             half _FloatShade1Shade2Blur; //暗部1→暗部2 模糊
             //暗部阈值贴图
             #if defined(_BASEMAP_SHADE_THRESHOLDMAP_ON)
-            TEXTURE2D(_TexShadeThresholdMap); SAMPLER(sampler_TexShadeThresholdMap); //暗部阈值贴图
             float4 _TexShadeThresholdMap_ST; //暗部阈值 贴图
             half _FloatShadeThresholdMapIntensity; //暗部阈值贴图 强度
             #endif
@@ -184,6 +220,24 @@ Shader "BlurToonURP/Lit"
             half _BumpScale; //法线贴图强度
             //开关
             half _ToggleNormalMapOnBaseMap; //开关 基础贴图
+            
+            
+            //-------- RimLight 边缘光 --------
+            half _ToggleRimLight; //开关 边缘光
+            half4 _ColorRimLightColor; //颜色
+            half _FloatRimLightIntensity; //强度
+            half _FloatRimLightInsideDistance; //内部距离
+            half _ToggleRimLightHard; //开关 硬边缘
+            //暗部遮罩
+            half _FloatRimLightShadeMaskIntensity; //暗部遮罩强度
+            half _FloatRimLightShadeMaskOffset; //暗部遮罩偏移
+            //暗部颜色
+            half4 _ColorRimLightShadeColor; //暗部颜色
+            half _FloatRimLightShadeColorIntensity; //暗部颜色 强度
+            half _ToggleRimLightShadeColorHard; //暗部颜色 硬边缘
+            //遮罩贴图
+            float4 _TexRimLightMaskMap_ST;
+            half _FloatRimLightMaskMapIntensity; //遮罩贴图强度
 
 
             //-------- Light 光照设置 --------
@@ -206,6 +260,10 @@ Shader "BlurToonURP/Lit"
             half _GlobalLightBaseShade1MixedIntensity; //暗部1和光照颜色的混合强度 0-1
             half _ToggleGlobalLightBaseShade2; //暗部2
             half _GlobalLightBaseShade2MixedIntensity; //暗部2和光照颜色的混合强度 0-1
+            half _ToggleGlobalLightRimLight; //边缘光
+            half _GlobalLightRimLightMixedIntensity; //边缘光和光照颜色的混合强度 0-1
+            half _ToggleGlobalLightRimLightShade; //边缘光暗部
+            half _GlobalLightRimLightShadeMixedIntensity; //边缘光暗部和光照颜色的混合强度 0-1
             
             //阴影设置
             half _ToggleShadowReceive; //开关 阴影接收
@@ -222,6 +280,7 @@ Shader "BlurToonURP/Lit"
             
             //光照水平方向锁定
             half _ToggleLightHorLockBaseMap; //光照水平锁定 基础贴图
+            half _ToggleLightHorLockRimLight; //光照水平锁定 边缘光
             
             CBUFFER_END
             
@@ -264,9 +323,11 @@ Shader "BlurToonURP/Lit"
                 float2 uv = IN.uv;
                 //基础贴图采样。sampler_BaseMap是Unity自动生成的对应采样器不需要额外定义。
                 float4 colorBaseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv) * _BaseColor;
+                float3 viewDirWS = GetWorldSpaceNormalizeViewDir(IN.positionWS); //观察方向
                 float3 normalDirWS = IN.normalWS; //法线方向
                 
                 //-------- NormalMap 法线贴图 -------- Start
+                //TODO 发现贴图及相关配置
                 //法线贴图采样
                 float3 normalDirTex = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, TRANSFORM_TEX(uv, _BumpMap)), _BumpScale);
                 //将法线贴图中获取的法线转换至世界空间
@@ -372,6 +433,87 @@ Shader "BlurToonURP/Lit"
                 float3 colorFinalBlend = lerp(colorBaseMapFinal, lerp(colorBaseMapShade1, colorBaseMapShade2, lightIntensityShade2), lightIntensityShade1);
                 //-------- BaseMap 基础贴图 -------- End
 
+
+                //-------- RimLight 边缘光 -------- Start
+                #if defined(_RIMLIGHT_ON)
+                //计算边缘光颜色，按配置混合光照颜色
+                half3 colorRimLight = lerp(_ColorRimLightColor.rgb,
+                    lerp(_ColorRimLightColor.rgb, _ColorRimLightColor.rgb * colorLightBlend, _GlobalLightRimLightMixedIntensity),
+                    _ToggleGlobalLightRimLight);
+                colorRimLight *= _ColorRimLightColor.a; //透明度
+                //法线方向 TODO使用法线方向来源配置
+                float3 normalDirOnRimLight = lerp(normalDirWS, normalDirTex, 0);
+
+                //计算边缘光系数，并按系数调整边缘光颜色
+                //法线和视线夹角，越靠近边缘值越大。范围为[0,1]。
+                float rimLightNdotV = saturate(1 - dot(normalDirOnRimLight, viewDirWS));
+                //强度控制。强度[0,1]映射到[3,0]，exp2为2的x次幂，范围[8,2]。pow为x的y次幂。x=rimLightNdotV小于1，所以y越小rimLightFactor越大。
+                //_FloatRimLightIntensity越大，rimLightFactor越大。rimLightFactor在(0,1]范围。
+                float rimLightFactor = pow(rimLightNdotV, exp2(lerp(3, 0, _FloatRimLightIntensity)));
+                //根据设定的内部延伸距离计算最终系数 或使用硬边缘
+                //距离计算 & 硬边缘开关。
+                //_FloatRimLightInsideDistance范围为[0,1]，值越大边缘光范围越窄，为1时没有边缘光。rimLightFactor在(0,1]范围。
+                rimLightFactor = saturate(
+                    lerp((rimLightFactor - _FloatRimLightInsideDistance) / (1 - _FloatRimLightInsideDistance),
+                        step(_FloatRimLightInsideDistance, rimLightFactor), _ToggleRimLightHard));
+                
+                //---- 暗部遮罩 ---- 使用，这能防止阴影部分不自然的发亮
+                #if defined(_RIMLIGHT_SHADEMASK_ON)
+                //通过光源方向计算需要去除的阴影部的边缘光
+                float3 lightDirOnRimLight = lightDirWS;
+                lightDirOnRimLight.y = lerp(lightDirOnRimLight.y, 0, _ToggleLightHorLockRimLight); //光照方向水平锁定
+                //暗部强度。dot范围[1,-1]，实际上在x<0时暗部遮罩才生效，及光照不到的暗部。
+                //通过_FloatRimLightShadeMaskOffset偏移rimLightShadeIntensity的范围，以调整暗部遮罩的作用范围。
+                float rimLightShadeIntensity = dot(normalDirWS, lightDirOnRimLight) - _FloatRimLightShadeMaskOffset;
+                
+                //根据阴影强度进行遮罩，_FloatRimLightInsideDistance越大distanceOffset越小，distanceOffset范围(16,1)
+                float distanceOffset = exp2(4 * (1 - _FloatRimLightInsideDistance)); //根据内部距离 变化遮罩强度
+                //暗部遮罩强度。shadeMaskIntensity为负值，最终通过抵消shadeMaskFactor正值来实现暗部遮罩。
+                float shadeMaskIntensity = min(rimLightShadeIntensity * _FloatRimLightShadeMaskIntensity * distanceOffset, 0);
+                //shadeMaskFactor接近0来消除最终的边缘光
+                float shadeMaskFactor = saturate(rimLightFactor + shadeMaskIntensity); //暗部遮罩强度 计算
+                
+                colorRimLight *= shadeMaskFactor;
+                
+                    //---- 暗部颜色 ---- 在去除阴影部分的边缘光后，我们可以按美术需求，再叠加自定义颜色的边缘光
+                    #if defined(_RIMLIGHT_SHADEMASK_COLOR_ON)
+                    //暗部颜色，按配置混合光照颜色
+                    half3 colorRimLightShade = lerp(_ColorRimLightShadeColor.rgb,
+                    lerp(_ColorRimLightShadeColor.rgb, _ColorRimLightShadeColor.rgb * colorLightBlend, _GlobalLightRimLightShadeMixedIntensity),
+                    _ToggleGlobalLightRimLight);
+                    colorRimLightShade *= _ColorRimLightShadeColor.a; //透明度
+                    //暗部边缘光系数
+                    float rimLightShadeFactor = pow(rimLightNdotV, exp2(lerp(3, 0, _FloatRimLightShadeColorIntensity)));
+                    //距离计算 & 硬边缘开关。
+                    rimLightShadeFactor = saturate(
+                        lerp((rimLightShadeFactor - _FloatRimLightInsideDistance) / (1 - _FloatRimLightInsideDistance),
+                            step(_FloatRimLightInsideDistance, rimLightShadeFactor), _ToggleRimLightShadeColorHard));
+                    //暗部遮罩强度 计算
+                    //遮罩强度越大shadeMaskFactor越接近0，暗部颜色越明显。使用rimLightShadeIntensity值判断使暗部颜色只对暗部生效。
+                    rimLightShadeFactor = lerp(saturate(rimLightShadeFactor) * (1 - shadeMaskFactor), 0, step(0, rimLightShadeIntensity));
+                    //暗部颜色开关
+                    colorRimLight = colorRimLight + colorRimLightShade * rimLightShadeFactor;
+                    #endif
+
+                #else
+                //使用系数调整边缘光颜色
+                colorRimLight *= rimLightFactor;
+                #endif
+
+                //通过遮罩贴图绘制边缘光
+                #if defined(_RIMLIGHT_MASKMAP_ON)
+                //边缘光 遮罩贴图
+                float rimlightMaskValue = SAMPLE_TEXTURE2D(_TexRimLightMaskMap, sampler_TexRimLightMaskMap, TRANSFORM_TEX(uv, _TexRimLightMaskMap)).r;
+                //遮罩贴图强度
+                colorRimLight = lerp(colorRimLight, colorRimLight * rimlightMaskValue, _FloatRimLightMaskMapIntensity);
+                #endif
+                
+                //混合边缘光颜色到最终颜色
+                colorFinalBlend = lerp(colorFinalBlend, colorFinalBlend + colorRimLight, _ToggleRimLight);
+                
+                #endif
+                //-------- RimLight 边缘光 -------- End
+
                 
                 half4 colorFinal = half4(colorFinalBlend, colorBaseMap.a);
                 
@@ -394,14 +536,15 @@ Shader "BlurToonURP/Lit"
             
             HLSLPROGRAM
 
-            // Keywords -------------------------------------
+            // Keywords ------------------------------------- Start
             // GPU Instancing
             #pragma multi_compile_instancing
+            
             // BlurToonURP Keywords
             //外描边
-            #pragma shader_feature_local _OUTLINE_ON
-            #pragma shader_feature_local _OUTLINE_WIDTH_SAME _OUTLINE_WIDTH_SCALING
-            // Keywords -------------------------------------
+            #pragma shader_feature_local _OUTLINE_ON // 外描边开关
+            #pragma shader_feature_local _OUTLINE_WIDTH_SAME _OUTLINE_WIDTH_SCALING // 外描边类型
+            // Keywords ------------------------------------- End
 
             #pragma vertex vert //顶点着色器
             #pragma fragment frag //片元着色器

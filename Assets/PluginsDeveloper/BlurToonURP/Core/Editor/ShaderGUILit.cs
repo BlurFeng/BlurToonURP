@@ -11,6 +11,7 @@ namespace BlurToonURP.EditorGUIx
 
             EditorGUIx.FoldoutPanel("【基础贴图 BaseMap】基础贴图及暗部贴图", PanelMainBasicMap);
             EditorGUIx.FoldoutPanel("【外描边 Outline】粗细、颜色", PanelMainOutline);
+            EditorGUIx.FoldoutPanel("【边缘光 RimLight】颜色、大小、遮罩", PanelMainRimLight);
             EditorGUIx.FoldoutPanel("【光照设置 LightSetting】光照开关、光照强度", PanelMainGlobalLight);
             
         }
@@ -203,7 +204,124 @@ namespace BlurToonURP.EditorGUIx
         }
         #endregion
         
-        #region 主面板-光照设置
+        #region 主面板-边缘光
+        private static readonly GUIContent ContentRimLightShadeMask = new GUIContent("暗部遮罩", "对“主光源反方向”的“边缘光”进行遮罩");
+        private static readonly GUIContent ContentRimLightMaskTex = new GUIContent("遮罩贴图", "在遮罩贴图中绘制边缘光的分布与强度，uv坐标与基础贴图相同。");
+
+        /// <summary>
+        /// 关键词 边缘光 开启
+        /// </summary>
+        private const string MatKeywordRimLightOn = "_RIMLIGHT_ON";
+        /// <summary>
+        /// 关键词 边缘光 暗部遮罩 开启
+        /// </summary>
+        private const string MatKeywordRimLightShadeMaskOn = "_RIMLIGHT_SHADEMASK_ON";
+        /// <summary>
+        /// 关键词 边缘光 暗部遮罩颜色 开启
+        /// </summary>
+        private const string MatKeywordRimLightShadeMaskColorOn = "_RIMLIGHT_SHADEMASK_COLOR_ON";
+        /// <summary>
+        /// 关键词 边缘光 遮罩贴图 开启
+        /// </summary>
+        private const string MatKeywordRimLightMaskMapOn = "_RIMLIGHT_MASKMAP_ON";
+
+        /// <summary>
+        /// 主面板-边缘光
+        /// </summary>
+        private void PanelMainRimLight()
+        {
+            //条目 边缘光开关
+            var matPropToggleRimLight = GetMaterialProperty("_ToggleRimLight");
+            EditorGUIx.SwitchButton("边缘光-主开关", matPropToggleRimLight);
+            //未开启 不显示详细设置
+            if (matPropToggleRimLight.floatValue.Equals(1))
+            {
+                Material.EnableKeyword(MatKeywordRimLightOn);
+            }
+            else
+            {
+                Material.DisableKeyword(MatKeywordRimLightOn);
+                return;
+            }
+
+            EditorGUIx.LabelItem("边缘光 设置");
+            //条目 颜色
+            MaterialEditor.ColorProperty(GetMaterialProperty("_ColorRimLightColor"), "颜色");
+            //条目 强度
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightIntensity"), "强度");
+            //条目 内遮罩大小
+            MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightInsideDistance"), "内部距离");
+            //条目
+            EditorGUIx.SwitchButton("硬边缘", GetMaterialProperty("_ToggleRimLightHard"));
+            EditorGUILayout.Space();
+
+            //子面板 暗部遮罩
+            EditorGUIx.FoldoutPanel("暗部遮罩", () =>
+            {
+                //条目 暗部遮罩
+                var matPropToggleRimLightShadeMask = GetMaterialProperty("_ToggleRimLightShadeMask");
+                EditorGUIx.SwitchButton(ContentRimLightShadeMask, matPropToggleRimLightShadeMask);
+                //暗部遮罩开关折叠
+                if (matPropToggleRimLightShadeMask.floatValue.Equals(1))
+                {
+                    //条目 遮罩强度
+                    MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightShadeMaskIntensity"), "遮罩强度");
+                    MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightShadeMaskOffset"), "遮罩偏移");
+                    
+                    //条目 暗部颜色开关
+                    var matPropToggleRimLightShadeColor = GetMaterialProperty("_ToggleRimLightShadeColor");
+                    EditorGUIx.SwitchButton("暗部颜色", matPropToggleRimLightShadeColor);
+                    //暗部颜色开关折叠
+                    if (matPropToggleRimLightShadeColor.floatValue.Equals(1))
+                    {
+                        EditorGUI.indentLevel++;
+
+                        //条目 颜色
+                        MaterialEditor.ColorProperty(GetMaterialProperty("_ColorRimLightShadeColor"), "| 颜色");
+                        //条目 强度
+                        MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightShadeColorIntensity"), "| 强度");
+                        //条目 硬边缘
+                        EditorGUIx.SwitchButton("| 硬边缘", GetMaterialProperty("_ToggleRimLightShadeColorHard"));
+
+                        EditorGUI.indentLevel--;
+
+                        Material.EnableKeyword(MatKeywordRimLightShadeMaskColorOn); //设置 关键词
+                    }
+                    else
+                        Material.DisableKeyword(MatKeywordRimLightShadeMaskColorOn); //设置 关键词
+
+                    Material.EnableKeyword(MatKeywordRimLightShadeMaskOn); //设置 关键词
+                }
+                else
+                    Material.DisableKeyword(MatKeywordRimLightShadeMaskOn); //设置 关键词
+
+
+                EditorGUILayout.Space();
+            }
+            , EditorGUIx.EFoldoutStyleType.Sub);
+
+            //子面板 遮罩贴图
+            EditorGUIx.FoldoutPanel("遮罩贴图", () =>
+            {
+                EditorGUIx.LabelItem(new GUIContent("遮罩绘制边缘光","绘制所有UV位置的边缘光遮罩，值越大边缘光越亮。"));
+                //条目 边缘光遮罩贴图
+                var matPropTexRimLightMaskMap = GetMaterialProperty("_TexRimLightMaskMap");
+                MaterialEditor.TexturePropertySingleLine(ContentRimLightMaskTex, matPropTexRimLightMaskMap);
+                MaterialEditor.TextureScaleOffsetProperty(matPropTexRimLightMaskMap);
+                //设置 关键词
+                if (matPropTexRimLightMaskMap.textureValue != null)
+                    Material.EnableKeyword(MatKeywordRimLightMaskMapOn);
+                else
+                    Material.DisableKeyword(MatKeywordRimLightMaskMapOn);
+
+                //条目 边缘光遮罩强度
+                MaterialEditor.RangeProperty(GetMaterialProperty("_FloatRimLightMaskMapIntensity"), "遮罩强度");
+            }
+            , EditorGUIx.EFoldoutStyleType.Sub);
+        }
+        #endregion
+        
+        #region Lighting Setting 光照设置
         private static readonly GUIContent ContentGlobalLightGIIntensity = new GUIContent("光照强度", "环境光照强度 : 例如“光照探针”的影响强度。");
         private static readonly GUIContent ContentLightHorLock = new GUIContent("光照水平锁定", "将光照的高度锁定至水平，使暗部在水平轴向进行变化。");
         private static readonly GUIContent ContentLightExposure = new GUIContent("曝光设置", "设定全局曝光强度、局部曝光强度。");
@@ -228,15 +346,15 @@ namespace BlurToonURP.EditorGUIx
             EditorGUILayout.Space();
 
             //子面板 附加光照设置
-            EditorGUIx.FoldoutPanel("● 附加光照", PanelSubAddLightSetting, EditorGUIx.EFoldoutStyleType.Sub);
+            EditorGUIx.FoldoutPanel("附加光照", PanelSubAddLightSetting, EditorGUIx.EFoldoutStyleType.Sub);
             //子面板 光照开关
-            EditorGUIx.FoldoutPanel("● 光照开关", PanelSubGlobalLightToggle, EditorGUIx.EFoldoutStyleType.Sub);
+            EditorGUIx.FoldoutPanel("光照开关", PanelSubGlobalLightToggle, EditorGUIx.EFoldoutStyleType.Sub);
             //子面板 阴影接收
-            EditorGUIx.FoldoutPanel("● 阴影设置", PanelSubShadowReceive, EditorGUIx.EFoldoutStyleType.Sub);
+            EditorGUIx.FoldoutPanel("阴影设置", PanelSubShadowReceive, EditorGUIx.EFoldoutStyleType.Sub);
             //子面板 内置光照
-            EditorGUIx.FoldoutPanel("● 内置光照", PanelSubBuiltInLight, EditorGUIx.EFoldoutStyleType.Sub);
+            EditorGUIx.FoldoutPanel("内置光照", PanelSubBuiltInLight, EditorGUIx.EFoldoutStyleType.Sub);
             //子面板 光照方向锁定
-            EditorGUIx.FoldoutPanel("● 光照方向锁定", PanelSubLightDirLock, EditorGUIx.EFoldoutStyleType.Sub);
+            EditorGUIx.FoldoutPanel("光照方向锁定", PanelSubLightDirLock, EditorGUIx.EFoldoutStyleType.Sub);
 
             EditorGUILayout.Space();
         }
@@ -281,14 +399,19 @@ namespace BlurToonURP.EditorGUIx
             this.SwitchButtonAndSubFloat(
                 "基础贴图", GetMaterialProperty("_ToggleGlobalLightBaseMap"),
                 "强度", GetMaterialProperty("_GlobalLightBaseMapMixedIntensity"));
-            //暗部贴图1受光照影响开关及混合强度
             this.SwitchButtonAndSubFloat(
                 "暗部贴图1", GetMaterialProperty("_ToggleGlobalLightBaseShade1"),
                 "强度", GetMaterialProperty("_GlobalLightBaseShade1MixedIntensity"));
-            //暗部贴图2受光照影响开关及混合强度
             this.SwitchButtonAndSubFloat(
                 "暗部贴图2", GetMaterialProperty("_ToggleGlobalLightBaseShade2"),
                 "强度", GetMaterialProperty("_GlobalLightBaseShade2MixedIntensity"));
+            
+            this.SwitchButtonAndSubFloat(
+                "边缘光", GetMaterialProperty("_ToggleGlobalLightRimLight"),
+                "强度", GetMaterialProperty("_GlobalLightRimLightMixedIntensity"));
+            this.SwitchButtonAndSubFloat(
+                "暗部边缘光", GetMaterialProperty("_ToggleGlobalLightRimLightShade"),
+                "强度", GetMaterialProperty("_GlobalLightRimLightShadeMixedIntensity"));
         }
         #endregion
 
@@ -374,8 +497,8 @@ namespace BlurToonURP.EditorGUIx
         {
             //光照方向锁定
             EditorGUIx.LabelItem(ContentLightHorLock);
-            //条目 基础贴图
             EditorGUIx.SwitchButton("基础贴图", GetMaterialProperty("_ToggleLightHorLockBaseMap"));
+            EditorGUIx.SwitchButton("边缘光暗部遮罩", GetMaterialProperty("_ToggleLightHorLockRimLight"));
             EditorGUILayout.Space();
         }
         #endregion
