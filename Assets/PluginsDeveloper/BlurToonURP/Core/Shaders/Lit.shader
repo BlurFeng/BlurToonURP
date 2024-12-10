@@ -29,7 +29,9 @@ Shader "BlurToonURP/Lit"
         _BumpMap ("Bump Map", 2D) = "bump" {} //法线贴图
         _BumpScale ("Bump Scale", Range(0, 1)) = 1 //强度
         //开关
-        _ToggleNormalMapOnBaseMap ("NormalMap On BaseMap", Float) = 0 //基础贴图
+        _ToggleNormalMapOnBaseMap ("NormalMap On BaseMap", Float) = 0 //开关 基础贴图
+        _ToggleNormalMapOnHighLight ("NormalMap On HighLight", Float) = 0 //开关 高光
+        _ToggleNormalMapOnRimLight ("NormalMap On RimLight", Float) = 0 //开关 边缘光
         
         
         //----------- Outline 外描边 -----------
@@ -220,6 +222,8 @@ Shader "BlurToonURP/Lit"
             half _BumpScale; //法线贴图强度
             //开关
             half _ToggleNormalMapOnBaseMap; //开关 基础贴图
+            half _ToggleNormalMapOnHighLight; //开关 高光
+            half _ToggleNormalMapOnRimLight; //开关 边缘光
             
             
             //-------- RimLight 边缘光 --------
@@ -327,7 +331,6 @@ Shader "BlurToonURP/Lit"
                 float3 normalDirWS = IN.normalWS; //法线方向
                 
                 //-------- NormalMap 法线贴图 -------- Start
-                //TODO 发现贴图及相关配置
                 //法线贴图采样
                 float3 normalDirTex = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, TRANSFORM_TEX(uv, _BumpMap)), _BumpScale);
                 //将法线贴图中获取的法线转换至世界空间
@@ -407,7 +410,7 @@ Shader "BlurToonURP/Lit"
                 
                 //光照计算
                 float3 lightDirOnBaseMap = lightDirWS;
-                lightDirOnBaseMap.y = lerp(lightDirOnBaseMap.y, 0, _ToggleLightHorLockBaseMap);
+                lightDirOnBaseMap.y = lerp(lightDirOnBaseMap.y, 0, _ToggleLightHorLockBaseMap); //光照水平方向锁定
                 //根据开关，使用顶点法线或法线贴图法线
                 float3 normalDirOnBaseMap = lerp(normalDirWS, normalDirTex, _ToggleNormalMapOnBaseMap);
                 float halfLambert = dot(normalDirOnBaseMap, lightDirOnBaseMap) * 0.5 + 0.5; //半兰伯特
@@ -432,8 +435,8 @@ Shader "BlurToonURP/Lit"
                 //混合颜色
                 float3 colorFinalBlend = lerp(colorBaseMapFinal, lerp(colorBaseMapShade1, colorBaseMapShade2, lightIntensityShade2), lightIntensityShade1);
                 //-------- BaseMap 基础贴图 -------- End
-
-
+                
+                
                 //-------- RimLight 边缘光 -------- Start
                 #if defined(_RIMLIGHT_ON)
                 //计算边缘光颜色，按配置混合光照颜色
@@ -442,7 +445,7 @@ Shader "BlurToonURP/Lit"
                     _ToggleGlobalLightRimLight);
                 colorRimLight *= _ColorRimLightColor.a; //透明度
                 //法线方向 TODO使用法线方向来源配置
-                float3 normalDirOnRimLight = lerp(normalDirWS, normalDirTex, 0);
+                float3 normalDirOnRimLight = lerp(normalDirWS, normalDirTex, _ToggleNormalMapOnRimLight);
 
                 //计算边缘光系数，并按系数调整边缘光颜色
                 //法线和视线夹角，越靠近边缘值越大。范围为[0,1]。

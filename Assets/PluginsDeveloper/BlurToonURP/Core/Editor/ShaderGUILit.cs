@@ -10,6 +10,7 @@ namespace BlurToonURP.EditorGUIx
             base.OnGUIDraw();
 
             EditorGUIx.FoldoutPanel("【基础贴图 BaseMap】基础贴图及暗部贴图", PanelMainBasicMap);
+            EditorGUIx.FoldoutPanel("【法线贴图 NormalMap】强度、效果开关", PanelMainNormalMap);
             EditorGUIx.FoldoutPanel("【外描边 Outline】粗细、颜色", PanelMainOutline);
             EditorGUIx.FoldoutPanel("【边缘光 RimLight】颜色、大小、遮罩", PanelMainRimLight);
             EditorGUIx.FoldoutPanel("【光照设置 LightSetting】光照开关、光照强度", PanelMainGlobalLight);
@@ -85,6 +86,27 @@ namespace BlurToonURP.EditorGUIx
             MaterialEditor.TextureScaleOffsetProperty(matPropTexShadeThresholdMap);
             //条目 暗部阈值贴图强度
             MaterialEditor.RangeProperty(GetMaterialProperty("_FloatShadeThresholdMapIntensity"), "强度");
+        }
+        #endregion
+        
+        #region 主面板-法线贴图
+        private static GUIContent m_ContentBaseNormalMap = new GUIContent("法线贴图", "法线偏移 : 贴图采样矢量(sRGB)进行法线偏移");
+        
+        /// <summary>
+        /// 主界面 法线贴图
+        /// </summary>
+        /// <param name="material"></param>
+        private void PanelMainNormalMap()
+        {
+            //条目 法线贴图&强度 缩放%位移
+            var matPropTexNormalMap = GetMaterialProperty("_BumpMap");
+            MaterialEditor.TexturePropertySingleLine(m_ContentBaseNormalMap, matPropTexNormalMap, GetMaterialProperty("_BumpScale"));
+            MaterialEditor.TextureScaleOffsetProperty(matPropTexNormalMap);
+
+            EditorGUIx.LabelItem("法线贴图的有效开关");
+            EditorGUIx.SwitchButton("基础贴图", GetMaterialProperty("_ToggleNormalMapOnBaseMap"));
+            EditorGUIx.SwitchButton("高光", GetMaterialProperty("_ToggleNormalMapOnHighLight"));
+            EditorGUIx.SwitchButton("边缘光", GetMaterialProperty("_ToggleNormalMapOnRimLight"));
         }
         #endregion
         
