@@ -9,11 +9,11 @@ namespace BlurToonURP.EditorGUIx
         {
             base.OnGUIDraw();
 
-            EditorGUIx.FoldoutPanel("【基础贴图 BaseMap】基础贴图及暗部贴图", PanelMainBasicMap);
-            EditorGUIx.FoldoutPanel("【法线贴图 NormalMap】强度、效果开关", PanelMainNormalMap);
-            EditorGUIx.FoldoutPanel("【外描边 Outline】粗细、颜色", PanelMainOutline);
-            EditorGUIx.FoldoutPanel("【边缘光 RimLight】颜色、大小、遮罩", PanelMainRimLight);
-            EditorGUIx.FoldoutPanel("【光照设置 LightSetting】光照开关、光照强度", PanelMainGlobalLight);
+            EditorGUIx.FoldoutPanel("【BaseMap 基础贴图】基础贴图及暗部贴图", PanelMainBasicMap);
+            EditorGUIx.FoldoutPanel("【NormalMap 法线贴图】强度、效果开关", PanelMainNormalMap);
+            EditorGUIx.FoldoutPanel("【Outline 外描边】粗细、颜色", PanelMainOutline);
+            EditorGUIx.FoldoutPanel("【RimLight 边缘光】颜色、大小、遮罩", PanelMainRimLight);
+            EditorGUIx.FoldoutPanel("【LightSetting 光照设置】光照开关、光照强度", PanelMainGlobalLight);
             
         }
 
