@@ -3,7 +3,7 @@
 **being developed**
 
 ## 【概要】
-这是使用 `Unity 2021.3LTS(URP 12.x)` 开发的`NPR`二次元卡通渲染Shader工程。\
+这是使用 `Unity 2021.3LTS(URP 12.x)` 的`URP`渲染管线开发的`NPR`二次元卡通渲染Shader工程。\
 实现了通用的二次元卡通渲染的效果。\
 使用MIT许可证，你可以随意的使用这个项目。
 
